@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MyFlix - Watch TV Shows & Movies Online. Netflix-style streaming experience.">
+  <title>MyFlix - Watch Movies & Series Online</title>
+  
+  <!-- Font and Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="netflix-theme">
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="navbar" id="navbar">
+    <div class="nav-left">
+      <a href="#" class="brand-logo" id="brand-logo" aria-label="MyFlix Home">
+        MYFLIX
+      </a>
+      <nav class="nav-links" id="nav-links">
+        <a href="#" class="nav-link active" data-tab="home">Home</a>
+        <a href="#" class="nav-link" data-tab="series">TV Shows</a>
+        <a href="#" class="nav-link" data-tab="movies">Movies</a>
+        <a href="#" class="nav-link" data-tab="popular">New & Popular</a>
+        <a href="#" class="nav-link" data-tab="mylist">My List <span class="badge-count" id="nav-list-count" style="display:none;">0</span></a>
+      </nav>
+    </div>
+
+    <div class="nav-right">
+      <!-- Search Box -->
+      <div class="search-box" id="search-box">
+        <button class="icon-btn search-trigger" id="search-trigger" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <input 
+          type="text" 
+          id="search-input" 
+          class="search-input" 
+          placeholder="Titles, people, genres..." 
+          autocomplete="off"
+        />
+        <button class="clear-search-btn" id="clear-search" style="display: none;" aria-label="Clear Search">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Notifications -->
+      <div class="notification-wrapper">
+        <button class="icon-btn" id="notif-btn" aria-label="Notifications">
+          <i class="fa-regular fa-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications</div>
+          <div class="notif-item">
+            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=100&q=80" alt="Stranger Echoes">
+            <div>
+              <p class="notif-title">New Season Alert</p>
+              <p class="notif-desc">Stranger Echoes Season 3 is now streaming!</p>
+              <span class="notif-time">2 hours ago</span>
+            </div>
+          </div>
+          <div class="notif-item">
+            <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=100&q=80" alt="Cyber Odyssey">
+            <div>
+              <p class="notif-title">Top 10 in your area</p>
+              <p class="notif-desc">Cyber Odyssey: 2099 jumped to #2 today.</p>
+              <span class="notif-time">Yesterday</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Avatar -->
+      <div class="profile-wrapper">
+        <div class="profile-btn" id="profile-btn">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Profile Avatar" class="avatar-img">
+          <i class="fa-solid fa-caret-down caret-icon"></i>
+        </div>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <div class="profile-user">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="User">
+            <span>Alex (Primary)</span>
+          </div>
+          <div class="profile-divider"></div>
+          <a href="#" class="profile-menu-item"><i class="fa-solid fa-user-pen"></i> Manage Profiles</a>
+          <a href="#" class="profile-menu-item"><i class="fa-solid fa-gear"></i> Account Settings</a>
+          <a href="#" class="profile-menu-item"><i class="fa-regular fa-circle-question"></i> Help Center</a>
+          <div class="profile-divider"></div>
+          <a href="#" class="profile-menu-item text-red" id="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out of MyFlix</a>
+        </div>
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle mobile menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="mobile-drawer" id="mobile-drawer">
+    <div class="mobile-drawer-header">
+      <span class="brand-logo">MYFLIX</span>
+      <button class="icon-btn" id="close-drawer-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="#" class="mobile-link active" data-tab="home"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="#" class="mobile-link" data-tab="series"><i class="fa-solid fa-tv"></i> TV Shows</a>
+      <a href="#" class="mobile-link" data-tab="movies"><i class="fa-solid fa-film"></i> Movies</a>
+      <a href="#" class="mobile-link" data-tab="popular"><i class="fa-solid fa-fire"></i> New & Popular</a>
+      <a href="#" class="mobile-link" data-tab="mylist"><i class="fa-solid fa-bookmark"></i> My List</a>
+    </div>
+  </div>
+
+  <main>
+    <!-- ================= HERO BILLBOARD ================= -->
+    <section class="billboard" id="billboard">
+      <div class="billboard-backdrop" id="billboard-backdrop"></div>
+      <div class="billboard-vignette"></div>
+      <div class="billboard-vignette-bottom"></div>
+
+      <div class="billboard-content">
+        <div class="original-badge" id="billboard-badge">
+          <span class="n-symbol">M</span>
+          <span class="badge-text">SERIES</span>
+        </div>
+
+        <h1 class="billboard-title" id="billboard-title">Stranger Echoes</h1>
+
+        <div class="billboard-meta">
+          <span class="match-score" id="billboard-match">98% Match</span>
+          <span class="meta-tag" id="billboard-rating">16+</span>
+          <span class="meta-tag" id="billboard-duration">3 Seasons</span>
+          <span class="quality-badge">Ultra HD 4K</span>
+          <span class="audio-badge"><i class="fa-solid fa-volume-high"></i> Spatial Audio</span>
+        </div>
+
+        <p class="billboard-desc" id="billboard-desc">
+          When a young boy vanishes from a tranquil coastal town, his friends uncover a web of clandestine government experiments, supernatural forces, and a mysterious girl with telekinetic powers.
+        </p>
+
+        <div class="billboard-actions">
+          <button class="btn btn-primary" id="billboard-play-btn">
+            <i class="fa-solid fa-play"></i> Play
+          </button>
+          <button class="btn btn-secondary" id="billboard-info-btn">
+            <i class="fa-solid fa-circle-info"></i> More Info
+          </button>
+          <button class="btn btn-icon-round" id="billboard-mylist-btn" title="Add to My List">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="billboard-side-controls">
+        <button class="audio-toggle-btn" id="audio-toggle-btn" aria-label="Toggle Audio">
+          <i class="fa-solid fa-volume-xmark" id="audio-toggle-icon"></i>
+        </button>
+        <span class="age-badge-ribbon" id="billboard-ribbon-rating">16+</span>
+      </div>
+    </section>
+
+    <!-- ================= GENRE FILTER BAR (Active on Movies/Series tab) ================= -->
+    <section class="genre-filter-bar" id="genre-filter-bar" style="display: none;">
+      <div class="genre-container">
+        <h2 class="category-heading" id="category-heading">Movies</h2>
+        <div class="filter-dropdown-wrapper">
+          <select id="genre-select" class="genre-select" aria-label="Filter by genre">
+            <option value="all">All Genres</option>
+            <option value="Action">Action</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Drama">Drama</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Documentary">Documentary</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SEARCH RESULTS VIEW ================= -->
+    <section class="search-results-section" id="search-results-section" style="display: none;">
+      <div class="search-header">
+        <h2>Explore Titles for <span class="search-query-text" id="search-query-text">""</span></h2>
+        <span class="results-count" id="results-count">0 titles found</span>
+      </div>
+      <div class="movie-grid" id="search-grid"></div>
+    </section>
+
+    <!-- ================= MAIN CATALOG ROWS ================= -->
+    <section class="catalog-rows" id="catalog-rows">
+      <!-- "My List" dynamic row will be injected here when populated -->
+      <div id="dynamic-mylist-row"></div>
+
+      <!-- Categories dynamically rendered by app.js -->
+      <div id="category-rows-container"></div>
+    </section>
+  </main>
+
+  <!-- ================= DETAIL MODAL ================= -->
+  <div class="modal-overlay" id="detail-modal-overlay">
+    <div class="detail-modal" id="detail-modal" role="dialog" aria-modal="true">
+      <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Modal Hero Header -->
+      <div class="modal-hero">
+        <div class="modal-hero-bg" id="modal-hero-bg"></div>
+        <div class="modal-hero-gradient"></div>
+        
+        <div class="modal-hero-content">
+          <h2 class="modal-title" id="modal-title">Stranger Echoes</h2>
+          <div class="modal-actions">
+            <button class="btn btn-primary" id="modal-play-btn">
+              <i class="fa-solid fa-play"></i> Play
+            </button>
+            <button class="btn btn-icon-round" id="modal-mylist-btn" title="Add to My List">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+            <button class="btn btn-icon-round" id="modal-like-btn" title="I like this">
+              <i class="fa-regular fa-thumbs-up"></i>
+            </button>
+            <button class="btn btn-icon-round" id="modal-share-btn" title="Share title">
+              <i class="fa-solid fa-share-nodes"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <div class="modal-columns">
+          <!-- Left Column (Description & Details) -->
+          <div class="modal-col-main">
+            <div class="modal-meta-row">
+              <span class="match-score" id="modal-match">98% Match</span>
+              <span class="meta-year" id="modal-year">2024</span>
+              <span class="meta-tag" id="modal-rating">16+</span>
+              <span class="meta-duration" id="modal-duration">3 Seasons</span>
+              <span class="quality-badge">HD</span>
+            </div>
+
+            <p class="modal-synopsis" id="modal-synopsis">
+              Detailed synopsis goes here.
+            </p>
+          </div>
+
+          <!-- Right Column (Cast, Genres, Tags) -->
+          <div class="modal-col-side">
+            <div class="meta-block">
+              <span class="meta-label">Cast:</span>
+              <span class="meta-value" id="modal-cast">Actor 1, Actor 2</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Genres:</span>
+              <span class="meta-value" id="modal-genres">Sci-Fi, Thriller</span>
+            </div>
+            <div class="meta-block">
+              <span class="meta-label">Director:</span>
+              <span class="meta-value" id="modal-director">Director Name</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Episodes Section (Only shown if series) -->
+        <div class="modal-episodes-section" id="modal-episodes-section">
+          <div class="episodes-header">
+            <h3>Episodes</h3>
+            <span class="episodes-season" id="modal-season-label">Season 1</span>
+          </div>
+          <div class="episodes-list" id="modal-episodes-list">
+            <!-- Injected by app.js -->
+          </div>
+        </div>
+
+        <!-- Similar / Recommended Titles -->
+        <div class="modal-similar-section">
+          <h3>More Like This</h3>
+          <div class="similar-grid" id="modal-similar-grid">
+            <!-- Injected by app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FULLSCREEN VIDEO PLAYER ================= -->
+  <div class="video-player-overlay" id="video-player-overlay">
+    <video id="html5-video" preload="metadata" playsinline>
+      <source src="" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+
+    <!-- Player Controls HUD -->
+    <div class="player-hud" id="player-hud">
+      <!-- Top HUD -->
+      <div class="player-top-bar">
+        <button class="player-back-btn" id="player-back-btn" title="Back to browsing">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="player-title-info">
+          <span class="player-show-title" id="player-title">Stranger Echoes</span>
+          <span class="player-ep-title" id="player-subtitle">Chapter 1: The Vanishing</span>
+        </div>
+      </div>
+
+      <!-- Bottom HUD -->
+      <div class="player-bottom-bar">
+        <!-- Progress Bar Scrubber -->
+        <div class="scrubber-container" id="scrubber-container">
+          <div class="scrubber-bar">
+            <div class="scrubber-buffer" id="scrubber-buffer"></div>
+            <div class="scrubber-progress" id="scrubber-progress"></div>
+            <div class="scrubber-handle" id="scrubber-handle"></div>
+          </div>
+          <div class="scrubber-time-preview" id="scrubber-time-preview">00:00</div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="player-controls-row">
+          <div class="controls-left">
+            <button class="player-ctrl-btn" id="player-play-pause" title="Play/Pause (Space)">
+              <i class="fa-solid fa-play" id="play-pause-icon"></i>
+            </button>
+            <button class="player-ctrl-btn" id="player-rewind" title="Rewind 10s">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <button class="player-ctrl-btn" id="player-forward" title="Forward 10s">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+            
+            <!-- Volume Control -->
+            <div class="volume-control">
+              <button class="player-ctrl-btn" id="player-volume-btn" title="Mute/Unmute (M)">
+                <i class="fa-solid fa-volume-high" id="volume-icon"></i>
+              </button>
+              <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1">
+            </div>
+
+            <!-- Time Display -->
+            <div class="time-display">
+              <span id="time-current">0:00</span> / <span id="time-total">0:00</span>
+            </div>
+          </div>
+
+          <div class="controls-right">
+            <button class="player-ctrl-btn" id="player-subtitles" title="Subtitles / Audio">
+              <i class="fa-regular fa-closed-captioning"></i>
+            </button>
+            <button class="player-ctrl-btn" id="player-speed" title="Speed">
+              <span id="speed-label">1x</span>
+            </button>
+            <button class="player-ctrl-btn" id="player-fullscreen" title="Fullscreen (F)">
+              <i class="fa-solid fa-expand" id="fullscreen-icon"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="netflix-footer">
+    <div class="footer-inner">
+      <div class="footer-socials">
+        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+
+      <div class="footer-links-grid">
+        <ul>
+          <li><a href="#">Audio Description</a></li>
+          <li><a href="#">Investor Relations</a></li>
+          <li><a href="#">Legal Notices</a></li>
+        </ul>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Jobs</a></li>
+          <li><a href="#">Cookie Preferences</a></li>
+        </ul>
+        <ul>
+          <li><a href="#">Gift Cards</a></li>
+          <li><a href="#">Terms of Use</a></li>
+          <li><a href="#">Corporate Information</a></li>
+        </ul>
+        <ul>
+          <li><a href="#">Media Center</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div class="service-code-wrapper">
+        <button class="service-code-btn">Service Code</button>
+      </div>
+
+      <p class="copyright-text">
+        &copy; 2026 MyFlix, Inc. Designed for portfolio & open-source demonstration. Fully responsive on GitHub Pages.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
