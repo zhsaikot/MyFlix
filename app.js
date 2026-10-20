@@ -1,5 +1,7 @@
 /**
- * MyFlix - Main Application Logic with Live TMDB API & Offline Fallback
+ * MyFlix - Main Application Logic
+ * Supports Full Movies & TV Series Streaming with Multi-Server Switcher,
+ * Official YouTube Trailers, Live TMDB API, and Offline Fallback
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -16,6 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
     searchQuery: "",
     searchDebounce: null,
     activeModalItem: null,
+    currentVideoItem: null,
+    currentSeason: 1,
+    currentEpisode: 1,
+    currentServer: "vidsrc-to",
+    playMode: "stream", // "stream" | "trailer" | "html5"
     isPlaying: false,
     hudTimeout: null,
     audioMuted: true
@@ -61,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     billboardDuration: document.getElementById("billboard-duration"),
     billboardRibbonRating: document.getElementById("billboard-ribbon-rating"),
     billboardPlayBtn: document.getElementById("billboard-play-btn"),
+    billboardTrailerBtn: document.getElementById("billboard-trailer-btn"),
     billboardInfoBtn: document.getElementById("billboard-info-btn"),
     billboardMyListBtn: document.getElementById("billboard-mylist-btn"),
     audioToggleBtn: document.getElementById("audio-toggle-btn"),
@@ -82,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalHeroBg: document.getElementById("modal-hero-bg"),
     modalTitle: document.getElementById("modal-title"),
     modalPlayBtn: document.getElementById("modal-play-btn"),
+    modalTrailerBtn: document.getElementById("modal-trailer-btn"),
     modalMyListBtn: document.getElementById("modal-mylist-btn"),
     modalLikeBtn: document.getElementById("modal-like-btn"),
     modalShareBtn: document.getElementById("modal-share-btn"),
@@ -99,13 +108,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Video Player
     playerOverlay: document.getElementById("video-player-overlay"),
-    video: document.getElementById("html5-video"),
+    videoStreamFrame: document.getElementById("video-stream-frame"),
     youtubeVideo: document.getElementById("youtube-video"),
+    video: document.getElementById("html5-video"),
     playerHud: document.getElementById("player-hud"),
     playerBottomBar: document.querySelector(".player-bottom-bar"),
     playerBackBtn: document.getElementById("player-back-btn"),
     playerTitle: document.getElementById("player-title"),
     playerSubtitle: document.getElementById("player-subtitle"),
+    playerServerSelect: document.getElementById("player-server-select"),
     playerPlayPause: document.getElementById("player-play-pause"),
     playPauseIcon: document.getElementById("play-pause-icon"),
     playerRewind: document.getElementById("player-rewind"),
@@ -134,6 +145,36 @@ document.addEventListener("DOMContentLoaded", () => {
     if (STATE.catalogItems.has(id)) return STATE.catalogItems.get(id);
     if (STATE.savedItems[id]) return STATE.savedItems[id];
     return getItemById(id);
+  }
+
+  // ================= STREAM SERVER RESOLVER =================
+  function getStreamUrl(server, item, season = 1, episode = 1) {
+    if (!item || !item.rawId) return null;
+    const isSeries = item.type === "tv" || item.type === "series";
+    const rawId = item.rawId;
+
+    switch (server) {
+      case "vidsrc-to":
+        return isSeries
+          ? `https://vidsrc.to/embed/tv/${rawId}/${season}/${episode}`
+          : `https://vidsrc.to/embed/movie/${rawId}`;
+      case "vidsrc-xyz":
+        return isSeries
+          ? `https://vidsrc.xyz/embed/tv/${rawId}/${season}-${episode}`
+          : `https://vidsrc.xyz/embed/movie/${rawId}`;
+      case "embed-su":
+        return isSeries
+          ? `https://embed.su/embed/tv/${rawId}/${season}/${episode}`
+          : `https://embed.su/embed/movie/${rawId}`;
+      case "multiembed":
+        return isSeries
+          ? `https://multiembed.mov/?video_id=${rawId}&tmdb=1&s=${season}&e=${episode}`
+          : `https://multiembed.mov/?video_id=${rawId}&tmdb=1`;
+      default:
+        return isSeries
+          ? `https://vidsrc.to/embed/tv/${rawId}/${season}/${episode}`
+          : `https://vidsrc.to/embed/movie/${rawId}`;
+    }
   }
 
   // ================= TOAST NOTIFICATION =================
@@ -246,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="card-hover-info">
         <div class="card-actions-row">
           <div class="actions-left">
-            <button class="card-btn-mini play-mini" title="Play"><i class="fa-solid fa-play"></i></button>
+            <button class="card-btn-mini play-mini" title="Watch Full Movie/Series"><i class="fa-solid fa-play"></i></button>
             <button class="card-btn-mini list-mini ${isInList ? 'active' : ''}" title="My List">
               <i class="fa-solid ${isInList ? 'fa-check' : 'fa-plus'}"></i>
             </button>
@@ -271,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (playBtn) {
         e.stopPropagation();
-        openVideoPlayer(item);
+        openVideoPlayer(item, null, "stream");
       } else if (listBtn) {
         e.stopPropagation();
         toggleMyList(item);
@@ -413,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================= TMDB ASYNC DATA LOADING =================
   async function loadTmdbCatalog() {
     try {
-      // First, render local fallback so the page isn't empty
+      // Local fallback initial render
       STATE.rowsData = ROW_CATEGORIES.map(rc => ({
         id: rc.id,
         title: rc.title,
@@ -424,7 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderBillboard(CATALOG_DATA[0]);
       renderAllRows();
 
-      // Fetch live data from TMDB in parallel
+      // Fetch live data from TMDB
       const [trending, top10, originals, popularTv, popularMovies, topRated, action, scifi, comedy] = await Promise.all([
         TMDB.getTrending(),
         TMDB.getTop10(),
@@ -438,15 +479,12 @@ document.addEventListener("DOMContentLoaded", () => {
       ]);
 
       if (trending && trending.length > 0) {
-        // Cache all items in memory
         const allItems = [...trending, ...(top10 || []), ...(originals || []), ...(popularTv || []), ...(popularMovies || []), ...(topRated || []), ...(action || []), ...(scifi || []), ...(comedy || [])];
         allItems.forEach(item => STATE.catalogItems.set(item.id, item));
 
-        // Update Billboard with top trending item with high-res backdrop
         const billboardHero = trending.find(it => it.backdrop && it.description.length > 50) || trending[0];
         renderBillboard(billboardHero);
 
-        // Populate live rows
         STATE.rowsData = [
           { id: "trending-now", title: "Trending Now", type: "all", items: trending },
           { id: "top-10", title: "Top 10 Today", isTop10: true, type: "all", items: top10 || trending.slice(0, 10) },
@@ -460,7 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ];
 
         renderAllRows();
-        console.log("TMDB Live Data Loaded Successfully!");
+        console.log("TMDB Live Catalog Loaded Successfully!");
       }
     } catch (err) {
       console.warn("Using offline catalog fallback:", err);
@@ -560,7 +598,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.warn("Live search fallback", e);
       }
 
-      // If TMDB returns empty, fallback to local search
       if (!results || results.length === 0) {
         const q = STATE.searchQuery.toLowerCase();
         results = Array.from(STATE.catalogItems.values()).filter(it => 
@@ -633,7 +670,7 @@ document.addEventListener("DOMContentLoaded", () => {
     el.modalOverlay.classList.add("active");
     document.body.style.overflow = "hidden";
 
-    // Asynchronously fetch deep details (YouTube trailer, cast, episodes, similar) from TMDB
+    // Asynchronously fetch deep details from TMDB
     if (item.rawId) {
       try {
         const deep = await TMDB.getDetails(item.rawId, item.type);
@@ -646,13 +683,11 @@ document.addEventListener("DOMContentLoaded", () => {
           el.modalCast.textContent = deep.cast.length > 0 ? deep.cast.join(", ") : "Top Cast";
           el.modalDirector.textContent = deep.director;
 
-          // Render Similar
           if (deep.similar && deep.similar.length > 0) {
             renderSimilarSection(deep.similar);
           }
         }
 
-        // If series, fetch episodes
         if (item.type === "tv" || item.type === "series") {
           const episodes = await TMDB.getSeasonEpisodes(item.rawId, 1);
           if (episodes && episodes.length > 0) {
@@ -668,7 +703,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.warn("Could not fetch deep details", err);
       }
     } else {
-      // Local fallback for episodes
       if (item.episodes && item.episodes.length > 0) {
         renderEpisodesSection(item.episodes, item);
       } else {
@@ -699,7 +733,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       epEl.addEventListener("click", () => {
         closeDetailModal();
-        openVideoPlayer(parentItem, `Episode ${ep.ep}: ${ep.title}`);
+        openVideoPlayer(parentItem, `Episode ${ep.ep}: ${ep.title}`, "stream", 1, ep.ep);
       });
       el.modalEpisodesList.appendChild(epEl);
     });
@@ -733,44 +767,91 @@ document.addEventListener("DOMContentLoaded", () => {
     STATE.activeModalItem = null;
   }
 
-  // ================= FULLSCREEN VIDEO PLAYER =================
-  function openVideoPlayer(item, customSubtitle = null) {
+  // ================= FULLSCREEN VIDEO PLAYER (FULL MOVIE & TRAILER) =================
+  function openVideoPlayer(item, customSubtitle = null, mode = "stream", season = 1, episode = 1) {
     if (!item) return;
     STATE.currentVideoItem = item;
+    STATE.currentSeason = season;
+    STATE.currentEpisode = episode;
+    STATE.playMode = mode;
+
     el.playerTitle.textContent = item.title;
-    el.playerSubtitle.textContent = customSubtitle || (item.type === "tv" || item.type === "series" ? "Official Trailer • TV Series" : "Official Trailer • Feature Film");
+    el.playerSubtitle.textContent = customSubtitle || (item.type === "tv" || item.type === "series" ? `Season ${season}: Episode ${episode}` : "Feature Film");
+
+    // Sync server dropdown
+    if (mode === "trailer") {
+      el.playerServerSelect.value = "trailer";
+    } else if (el.playerServerSelect.value === "trailer") {
+      el.playerServerSelect.value = "vidsrc-to";
+    }
+
+    renderActiveStream();
 
     el.playerOverlay.classList.add("active");
     document.body.style.overflow = "hidden";
-
-    // If official YouTube trailer is available, play in YouTube player
-    if (item.youtubeKey) {
-      el.html5Video = el.video;
-      el.html5Video.pause();
-      el.html5Video.style.display = "none";
-      el.playerBottomBar.style.display = "none"; // YouTube handles playback bar
-
-      el.youtubeVideo.style.display = "block";
-      el.youtubeVideo.src = `https://www.youtube.com/embed/${item.youtubeKey}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`;
-      STATE.isPlaying = true;
-    } else {
-      // Fallback HTML5 sample video player
-      el.youtubeVideo.style.display = "none";
-      el.youtubeVideo.src = "";
-      el.video.style.display = "block";
-      el.playerBottomBar.style.display = "flex";
-
-      el.video.src = item.trailer || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4";
-      el.video.play().then(() => {
-        STATE.isPlaying = true;
-        el.playPauseIcon.className = "fa-solid fa-pause";
-      }).catch(e => console.warn("Autoplay notice:", e));
-    }
-
     resetHudTimer();
   }
 
+  function renderActiveStream() {
+    const item = STATE.currentVideoItem;
+    if (!item) return;
+
+    const server = el.playerServerSelect.value;
+    STATE.currentServer = server;
+
+    // 1. Trailer Mode (Official YouTube Player)
+    if (server === "trailer" || STATE.playMode === "trailer") {
+      el.videoStreamFrame.style.display = "none";
+      el.videoStreamFrame.src = "";
+      el.video.pause();
+      el.video.style.display = "none";
+      el.playerBottomBar.style.display = "none";
+
+      if (item.youtubeKey) {
+        el.youtubeVideo.style.display = "block";
+        el.youtubeVideo.src = `https://www.youtube.com/embed/${item.youtubeKey}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`;
+        showToast("Playing Official Trailer", "fa-film");
+      } else {
+        showToast("No YouTube trailer found, switching to full stream", "fa-triangle-exclamation");
+        el.playerServerSelect.value = "vidsrc-to";
+        renderActiveStream();
+      }
+      return;
+    }
+
+    // 2. Full Movie / Show Embed Stream
+    const streamUrl = getStreamUrl(server, item, STATE.currentSeason, STATE.currentEpisode);
+    if (streamUrl) {
+      el.youtubeVideo.style.display = "none";
+      el.youtubeVideo.src = "";
+      el.video.pause();
+      el.video.style.display = "none";
+      el.playerBottomBar.style.display = "none"; // Embeds have their own native controls
+
+      el.videoStreamFrame.style.display = "block";
+      el.videoStreamFrame.src = streamUrl;
+      showToast(`Connected to ${el.playerServerSelect.options[el.playerServerSelect.selectedIndex].text}`, "fa-server");
+      return;
+    }
+
+    // 3. Fallback Sample HTML5 Video Player
+    el.videoStreamFrame.style.display = "none";
+    el.videoStreamFrame.src = "";
+    el.youtubeVideo.style.display = "none";
+    el.youtubeVideo.src = "";
+
+    el.video.style.display = "block";
+    el.playerBottomBar.style.display = "flex";
+    el.video.src = item.trailer || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4";
+    el.video.play().then(() => {
+      STATE.isPlaying = true;
+      el.playPauseIcon.className = "fa-solid fa-pause";
+    }).catch(e => console.warn("Autoplay notice:", e));
+  }
+
   function closeVideoPlayer() {
+    el.videoStreamFrame.src = "";
+    el.videoStreamFrame.style.display = "none";
     el.youtubeVideo.src = "";
     el.youtubeVideo.style.display = "none";
     el.video.pause();
@@ -805,8 +886,11 @@ document.addEventListener("DOMContentLoaded", () => {
     el.playerHud.classList.remove("idle");
     if (STATE.hudTimeout) clearTimeout(STATE.hudTimeout);
     STATE.hudTimeout = setTimeout(() => {
-      if (STATE.isPlaying) el.playerHud.classList.add("idle");
-    }, 3000);
+      // Don't auto-hide when hovering over the server dropdown
+      if (document.activeElement !== el.playerServerSelect) {
+        el.playerHud.classList.add("idle");
+      }
+    }, 3500);
   }
 
   // ================= EVENT LISTENERS =================
@@ -826,11 +910,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     el.mobileLinks.forEach(link => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        el.mobileDrawer.classList.remove("open");
-        switchTab(link.dataset.tab);
-      });
+      if (link.dataset.tab) {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          el.mobileDrawer.classList.remove("open");
+          switchTab(link.dataset.tab);
+        });
+      }
     });
 
     // Drawer
@@ -885,8 +971,15 @@ document.addEventListener("DOMContentLoaded", () => {
       renderAllRows();
     });
 
+    // Server switch dropdown inside player
+    el.playerServerSelect.addEventListener("change", () => {
+      STATE.playMode = el.playerServerSelect.value === "trailer" ? "trailer" : "stream";
+      renderActiveStream();
+    });
+
     // Billboard Actions
-    el.billboardPlayBtn.addEventListener("click", () => openVideoPlayer(STATE.currentBillboard));
+    el.billboardPlayBtn.addEventListener("click", () => openVideoPlayer(STATE.currentBillboard, null, "stream"));
+    el.billboardTrailerBtn.addEventListener("click", () => openVideoPlayer(STATE.currentBillboard, null, "trailer"));
     el.billboardInfoBtn.addEventListener("click", () => openDetailModal(STATE.currentBillboard));
     el.billboardMyListBtn.addEventListener("click", () => toggleMyList(STATE.currentBillboard));
 
@@ -904,7 +997,12 @@ document.addEventListener("DOMContentLoaded", () => {
     el.modalPlayBtn.addEventListener("click", () => {
       const item = STATE.activeModalItem;
       closeDetailModal();
-      openVideoPlayer(item);
+      openVideoPlayer(item, null, "stream");
+    });
+    el.modalTrailerBtn.addEventListener("click", () => {
+      const item = STATE.activeModalItem;
+      closeDetailModal();
+      openVideoPlayer(item, null, "trailer");
     });
     el.modalMyListBtn.addEventListener("click", () => {
       if (STATE.activeModalItem) toggleMyList(STATE.activeModalItem);

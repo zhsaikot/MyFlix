@@ -61,7 +61,7 @@
             <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=100&q=80" alt="Stranger Echoes">
             <div>
               <p class="notif-title">New Season Alert</p>
-              <p class="notif-desc">Stranger Echoes Season 3 is now streaming!</p>
+              <p class="notif-desc">Cyberpunk: Edgerunners is trending today!</p>
               <span class="notif-time">2 hours ago</span>
             </div>
           </div>
@@ -69,7 +69,7 @@
             <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=100&q=80" alt="Cyber Odyssey">
             <div>
               <p class="notif-title">Top 10 in your area</p>
-              <p class="notif-desc">Cyber Odyssey: 2099 jumped to #2 today.</p>
+              <p class="notif-desc">Oppenheimer jumped to #1 today.</p>
               <span class="notif-time">Yesterday</span>
             </div>
           </div>
@@ -85,10 +85,10 @@
         <div class="profile-dropdown" id="profile-dropdown">
           <div class="profile-user">
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="User">
-            <span>Alex (Primary)</span>
+            <span>MD. Ziaul Hasan</span>
           </div>
           <div class="profile-divider"></div>
-          <a href="#" class="profile-menu-item"><i class="fa-solid fa-user-pen"></i> Manage Profiles</a>
+          <a href="https://www.instagram.com/zhsaikot" target="_blank" rel="noopener noreferrer" class="profile-menu-item"><i class="fa-brands fa-instagram"></i> Follow on Instagram</a>
           <a href="#" class="profile-menu-item"><i class="fa-solid fa-gear"></i> Account Settings</a>
           <a href="#" class="profile-menu-item"><i class="fa-regular fa-circle-question"></i> Help Center</a>
           <div class="profile-divider"></div>
@@ -115,6 +115,7 @@
       <a href="#" class="mobile-link" data-tab="movies"><i class="fa-solid fa-film"></i> Movies</a>
       <a href="#" class="mobile-link" data-tab="popular"><i class="fa-solid fa-fire"></i> New & Popular</a>
       <a href="#" class="mobile-link" data-tab="mylist"><i class="fa-solid fa-bookmark"></i> My List</a>
+      <a href="https://www.instagram.com/zhsaikot" target="_blank" rel="noopener noreferrer" class="mobile-link"><i class="fa-brands fa-instagram"></i> Creator: @zhsaikot</a>
     </div>
   </div>
 
@@ -131,23 +132,26 @@
           <span class="badge-text">SERIES</span>
         </div>
 
-        <h1 class="billboard-title" id="billboard-title">Stranger Echoes</h1>
+        <h1 class="billboard-title" id="billboard-title">Cyberpunk: Edgerunners</h1>
 
         <div class="billboard-meta">
           <span class="match-score" id="billboard-match">98% Match</span>
           <span class="meta-tag" id="billboard-rating">16+</span>
-          <span class="meta-tag" id="billboard-duration">3 Seasons</span>
+          <span class="meta-tag" id="billboard-duration">TV Series</span>
           <span class="quality-badge">Ultra HD 4K</span>
           <span class="audio-badge"><i class="fa-solid fa-volume-high"></i> Spatial Audio</span>
         </div>
 
         <p class="billboard-desc" id="billboard-desc">
-          When a young boy vanishes from a tranquil coastal town, his friends uncover a web of clandestine government experiments, supernatural forces, and a mysterious girl with telekinetic powers.
+          In a dystopia riddled with corruption and cybernetic implants, a talented but reckless street kid strives to become a mercenary outlaw.
         </p>
 
         <div class="billboard-actions">
           <button class="btn btn-primary" id="billboard-play-btn">
-            <i class="fa-solid fa-play"></i> Play
+            <i class="fa-solid fa-play"></i> Watch Now
+          </button>
+          <button class="btn btn-secondary" id="billboard-trailer-btn">
+            <i class="fa-brands fa-youtube"></i> Trailer
           </button>
           <button class="btn btn-secondary" id="billboard-info-btn">
             <i class="fa-solid fa-circle-info"></i> More Info
@@ -166,7 +170,7 @@
       </div>
     </section>
 
-    <!-- ================= GENRE FILTER BAR (Active on Movies/Series tab) ================= -->
+    <!-- ================= GENRE FILTER BAR ================= -->
     <section class="genre-filter-bar" id="genre-filter-bar" style="display: none;">
       <div class="genre-container">
         <h2 class="category-heading" id="category-heading">Movies</h2>
@@ -197,10 +201,7 @@
 
     <!-- ================= MAIN CATALOG ROWS ================= -->
     <section class="catalog-rows" id="catalog-rows">
-      <!-- "My List" dynamic row will be injected here when populated -->
       <div id="dynamic-mylist-row"></div>
-
-      <!-- Categories dynamically rendered by app.js -->
       <div id="category-rows-container"></div>
     </section>
   </main>
@@ -221,7 +222,10 @@
           <h2 class="modal-title" id="modal-title">Stranger Echoes</h2>
           <div class="modal-actions">
             <button class="btn btn-primary" id="modal-play-btn">
-              <i class="fa-solid fa-play"></i> Play
+              <i class="fa-solid fa-play"></i> Watch Full
+            </button>
+            <button class="btn btn-secondary" id="modal-trailer-btn">
+              <i class="fa-brands fa-youtube"></i> Trailer
             </button>
             <button class="btn btn-icon-round" id="modal-mylist-btn" title="Add to My List">
               <i class="fa-solid fa-plus"></i>
@@ -271,7 +275,7 @@
           </div>
         </div>
 
-        <!-- Episodes Section (Only shown if series) -->
+        <!-- Episodes Section (Shown if series) -->
         <div class="modal-episodes-section" id="modal-episodes-section">
           <div class="episodes-header">
             <h3>Episodes</h3>
@@ -295,7 +299,13 @@
 
   <!-- ================= FULLSCREEN VIDEO PLAYER ================= -->
   <div class="video-player-overlay" id="video-player-overlay">
+    <!-- Full Movie / Series Streaming Iframe -->
+    <iframe id="video-stream-frame" class="video-stream-frame" src="" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+    
+    <!-- YouTube Trailer Iframe -->
     <iframe id="youtube-video" class="youtube-player-frame" src="" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+    
+    <!-- Fallback HTML5 Player -->
     <video id="html5-video" preload="metadata" playsinline>
       <source src="" type="video/mp4">
       Your browser does not support the video tag.
@@ -312,11 +322,22 @@
           <span class="player-show-title" id="player-title">Stranger Echoes</span>
           <span class="player-ep-title" id="player-subtitle">Chapter 1: The Vanishing</span>
         </div>
+        
+        <!-- Multi-Server Selector -->
+        <div class="player-server-selector">
+          <span class="server-label"><i class="fa-solid fa-server"></i> Server:</span>
+          <select id="player-server-select" class="player-server-select" aria-label="Streaming Server">
+            <option value="vidsrc-to" selected>Server 1 (Full HD)</option>
+            <option value="vidsrc-xyz">Server 2 (Fast Stream)</option>
+            <option value="embed-su">Server 3 (VIP Stream)</option>
+            <option value="multiembed">Server 4 (Multi Stream)</option>
+            <option value="trailer">Official Trailer</option>
+          </select>
+        </div>
       </div>
 
-      <!-- Bottom HUD -->
+      <!-- Bottom HUD (for HTML5 video mode) -->
       <div class="player-bottom-bar">
-        <!-- Progress Bar Scrubber -->
         <div class="scrubber-container" id="scrubber-container">
           <div class="scrubber-bar">
             <div class="scrubber-buffer" id="scrubber-buffer"></div>
@@ -326,7 +347,6 @@
           <div class="scrubber-time-preview" id="scrubber-time-preview">00:00</div>
         </div>
 
-        <!-- Control Buttons -->
         <div class="player-controls-row">
           <div class="controls-left">
             <button class="player-ctrl-btn" id="player-play-pause" title="Play/Pause (Space)">
@@ -339,7 +359,6 @@
               <i class="fa-solid fa-rotate-right"></i>
             </button>
             
-            <!-- Volume Control -->
             <div class="volume-control">
               <button class="player-ctrl-btn" id="player-volume-btn" title="Mute/Unmute (M)">
                 <i class="fa-solid fa-volume-high" id="volume-icon"></i>
@@ -347,16 +366,12 @@
               <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1">
             </div>
 
-            <!-- Time Display -->
             <div class="time-display">
               <span id="time-current">0:00</span> / <span id="time-total">0:00</span>
             </div>
           </div>
 
           <div class="controls-right">
-            <button class="player-ctrl-btn" id="player-subtitles" title="Subtitles / Audio">
-              <i class="fa-regular fa-closed-captioning"></i>
-            </button>
             <button class="player-ctrl-btn" id="player-speed" title="Speed">
               <span id="speed-label">1x</span>
             </button>
@@ -376,8 +391,8 @@
   <footer class="netflix-footer">
     <div class="footer-inner">
       <div class="footer-socials">
+        <a href="https://www.instagram.com/zhsaikot" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
         <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
         <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
         <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
       </div>
@@ -408,6 +423,10 @@
       <div class="service-code-wrapper">
         <button class="service-code-btn">Service Code</button>
       </div>
+
+      <p class="creator-credit">
+        Created by <a href="https://www.instagram.com/zhsaikot" target="_blank" rel="noopener noreferrer" class="creator-link"><i class="fa-brands fa-instagram"></i> MD. Ziaul Hasan</a>
+      </p>
 
       <p class="copyright-text">
         &copy; 2026 MyFlix, Inc. Designed for portfolio & open-source demonstration. Fully responsive on GitHub Pages.
