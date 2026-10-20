@@ -1370,6 +1370,13 @@ button {
   display: flex;
 }
 
+.youtube-player-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: #000;
+}
+
 #html5-video {
   width: 100%;
   height: 100%;

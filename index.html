@@ -295,6 +295,7 @@
 
   <!-- ================= FULLSCREEN VIDEO PLAYER ================= -->
   <div class="video-player-overlay" id="video-player-overlay">
+    <iframe id="youtube-video" class="youtube-player-frame" src="" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen style="display:none;"></iframe>
     <video id="html5-video" preload="metadata" playsinline>
       <source src="" type="video/mp4">
       Your browser does not support the video tag.
@@ -415,6 +416,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="tmdb.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
