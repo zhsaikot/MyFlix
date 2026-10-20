@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#1f1f1f"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+
+    <!-- Netflix Red Gradients -->
+    <linearGradient id="redPillar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B81D24"/>
+      <stop offset="100%" stop-color="#7B0C11"/>
+    </linearGradient>
+
+    <linearGradient id="redLeftDiag" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF1E27"/>
+      <stop offset="50%" stop-color="#E50914"/>
+      <stop offset="100%" stop-color="#B81D24"/>
+    </linearGradient>
+
+    <linearGradient id="redRightDiag" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF3844"/>
+      <stop offset="60%" stop-color="#E50914"/>
+      <stop offset="100%" stop-color="#990B10"/>
+    </linearGradient>
+
+    <!-- Drop Shadow for 3D Ribbon Overlap -->
+    <filter id="ribbonShadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="-4" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.85"/>
+    </filter>
+
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#E50914" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Badge -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="4"/>
+
+  <!-- Iconic Netflix-Style Ribbon "M" -->
+  <g filter="url(#glow)">
+    <!-- Left Vertical Pillar -->
+    <path d="M 104 88 L 176 88 L 176 424 L 104 424 Z" fill="url(#redPillar)"/>
+
+    <!-- Right Vertical Pillar -->
+    <path d="M 336 88 L 408 88 L 408 424 L 336 424 Z" fill="url(#redPillar)"/>
+
+    <!-- Left Diagonal Fold -->
+    <polygon points="104,88 184,88 288,328 224,328" fill="url(#redLeftDiag)"/>
+
+    <!-- Right Diagonal Ribbon (Overlapping with Depth Shadow) -->
+    <polygon points="408,88 328,88 224,328 288,328" fill="url(#redRightDiag)" filter="url(#ribbonShadow)"/>
+  </g>
+</svg>
